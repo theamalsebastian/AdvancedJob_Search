@@ -1,3 +1,8 @@
+"""
+Qdrant vector store wrapper.
+Replaces FAISS — cloud-hosted, persistent, supports filtering + payload.
+"""
+
 import logging
 import uuid
 from typing import List, Dict, Optional, Tuple
@@ -16,15 +21,16 @@ _embedder = None
 def get_client() -> QdrantClient:
     global _client
     if _client is None:
-        _client = QdrantClient(url=QDRANT_URL, api_key=QDRANT_API_KEY, timeout=60)
+        _client = QdrantClient(url=QDRANT_URL, api_key=QDRANT_API_KEY)
         _ensure_collection(_client)
     return _client
+
 
 def get_embedder():
     global _embedder
     if _embedder is None:
-        from sentence_transformers import SentenceTransformer
-        _embedder = SentenceTransformer(EMBED_MODEL)
+        from fastembed import TextEmbedding
+        _embedder = TextEmbedding(model_name="BAAI/bge-small-en-v1.5")  # ~50MB, no torch
     return _embedder
 
 
@@ -33,21 +39,34 @@ def _ensure_collection(client: QdrantClient):
     if QDRANT_COLLECTION not in collections:
         client.create_collection(
             collection_name=QDRANT_COLLECTION,
-            vectors_config=qmodels.VectorParams(size=EMBED_DIM, distance=qmodels.Distance.COSINE),
+            vectors_config=qmodels.VectorParams(
+                size=EMBED_DIM,
+                distance=qmodels.Distance.COSINE,
+            ),
         )
+        logger.info(f"Created Qdrant collection: {QDRANT_COLLECTION}")
 
 
 def embed_text(text: str) -> List[float]:
     model = get_embedder()
-    return model.encode(text, normalize_embeddings=True).tolist()
+    embeddings = list(model.embed([text]))
+    return embeddings[0].tolist()
 
 
 def embed_batch(texts: List[str]) -> List[List[float]]:
     model = get_embedder()
-    return model.encode(texts, normalize_embeddings=True).tolist()
+    embeddings = list(model.embed(texts))
+    return [e.tolist() for e in embeddings]
 
+
+# ── upsert ────────────────────────────────────────────────────────────────────
 
 def upsert_jobs(jobs: List[Dict]) -> List[str]:
+    """
+    Embed and upsert jobs into Qdrant.
+    Each job dict needs: title, company, location, description, url, source
+    Returns list of qdrant point IDs (UUIDs).
+    """
     client = get_client()
     texts = [_job_to_text(j) for j in jobs]
     vectors = embed_batch(texts)
@@ -55,7 +74,7 @@ def upsert_jobs(jobs: List[Dict]) -> List[str]:
     points = []
     point_ids = []
     for job, vec in zip(jobs, vectors):
-        pid = str(uuid.uuid5(uuid.NAMESPACE_URL, job["url"]))
+        pid = str(uuid.uuid5(uuid.NAMESPACE_URL, job["url"]))  # deterministic from URL
         point_ids.append(pid)
         points.append(
             qmodels.PointStruct(
@@ -74,10 +93,18 @@ def upsert_jobs(jobs: List[Dict]) -> List[str]:
         )
 
     client.upsert(collection_name=QDRANT_COLLECTION, points=points)
+    logger.info(f"Upserted {len(points)} jobs to Qdrant")
     return point_ids
 
 
-def semantic_search(query: str, top_k: int = 10, source_filter: Optional[str] = None) -> List[Tuple[Dict, float]]:
+# ── search ────────────────────────────────────────────────────────────────────
+
+def semantic_search(
+    query: str,
+    top_k: int = 10,
+    source_filter: Optional[str] = None,
+) -> List[Tuple[Dict, float]]:
+    """Pure vector similarity search."""
     client = get_client()
     query_vec = embed_text(query)
 
@@ -98,10 +125,19 @@ def semantic_search(query: str, top_k: int = 10, source_filter: Optional[str] = 
 
 
 def keyword_search(query: str, top_k: int = 20) -> List[Dict]:
+    """
+    Simple keyword/BM25-style search via Qdrant payload text matching.
+    Used for hybrid search (combined with semantic).
+    """
     client = get_client()
+    # Qdrant full-text search requires payload index; fallback to scroll+filter
     keywords = [w.lower() for w in query.split() if len(w) > 2]
 
-    results, _ = client.scroll(collection_name=QDRANT_COLLECTION, limit=200, with_payload=True)
+    results, _ = client.scroll(
+        collection_name=QDRANT_COLLECTION,
+        limit=200,  # scan window
+        with_payload=True,
+    )
 
     scored = []
     for point in results:
@@ -114,10 +150,19 @@ def keyword_search(query: str, top_k: int = 20) -> List[Dict]:
     return [p for p, _ in scored[:top_k]]
 
 
-def hybrid_search(query: str, top_k: int = 10, alpha: float = 0.7) -> List[Tuple[Dict, float]]:
+def hybrid_search(
+    query: str,
+    top_k: int = 10,
+    alpha: float = 0.7,  # weight toward semantic
+) -> List[Tuple[Dict, float]]:
+    """
+    Combines semantic (vector) + keyword (lexical) search.
+    Reciprocal rank fusion of both result sets.
+    """
     semantic_results = semantic_search(query, top_k=top_k * 2)
     keyword_results = keyword_search(query, top_k=top_k * 2)
 
+    # Build rank maps
     sem_ranks = {r[0]["url"]: i for i, r in enumerate(semantic_results)}
     kw_ranks = {r["url"]: i for i, r in enumerate(keyword_results)}
 
@@ -126,6 +171,7 @@ def hybrid_search(query: str, top_k: int = 10, alpha: float = 0.7) -> List[Tuple
     for url in all_urls:
         sem_rank = sem_ranks.get(url, top_k * 2)
         kw_rank = kw_ranks.get(url, top_k * 2)
+        # RRF score: lower rank = better
         score = alpha * (1 / (sem_rank + 1)) + (1 - alpha) * (1 / (kw_rank + 1))
 
         payload = None
@@ -147,7 +193,12 @@ def hybrid_search(query: str, top_k: int = 10, alpha: float = 0.7) -> List[Tuple
 
 
 def _job_to_text(job: Dict) -> str:
-    return " | ".join([job.get("title", ""), job.get("company", ""), job.get("location", ""), job.get("description", "")])
+    return " | ".join([
+        job.get("title", ""),
+        job.get("company", ""),
+        job.get("location", ""),
+        job.get("description", ""),
+    ])
 
 
 def collection_stats() -> Dict:
