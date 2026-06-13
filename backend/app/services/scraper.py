@@ -75,7 +75,7 @@ def fetch_arbeitnow_jobs(query: str = "", max_results: int = 25) -> List[Dict]:
 def _strip_html(raw: str) -> str:
     if not raw:
         return ""
-    return " ".join(BeautifulSoup(raw, "lxml").get_text(separator=" ").split())
+    return " ".join(BeautifulSoup(raw, "html.parser").get_text(separator=" ").split())
 
 
 def scrape_jobs(queries: List[str], location: str = "", max_per_query: int = 25) -> List[Dict]:
