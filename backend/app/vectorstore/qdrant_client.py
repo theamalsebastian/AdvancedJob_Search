@@ -135,7 +135,7 @@ def keyword_search(query: str, top_k: int = 20) -> List[Dict]:
 
     results, _ = client.scroll(
         collection_name=QDRANT_COLLECTION,
-        limit=200,  # scan window
+        limit=50,  # reduced from 200 — free-tier CPU/latency
         with_payload=True,
     )
 
