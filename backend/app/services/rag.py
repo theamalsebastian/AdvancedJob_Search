@@ -1,6 +1,10 @@
+"""
+services/rag.py
+RAG chain using Groq + hybrid search + reranking.
+"""
+
 import logging
 import time
-import re
 from typing import Dict, List, Optional, Tuple
 
 from groq import Groq
@@ -11,6 +15,7 @@ from app.services.reranker import rerank
 from app.services.embedder import SKILL_TO_CATEGORY
 
 logger = logging.getLogger(__name__)
+
 _client: Optional[Groq] = None
 
 SYSTEM_PROMPT = """You are an expert career advisor and job search assistant.
@@ -40,12 +45,16 @@ def _job_skills(description: str) -> set:
             if skill in text_lower:
                 found.add(skill)
         else:
+            import re
             if re.search(r'\b' + re.escape(skill) + r'\b', text_lower):
                 found.add(skill)
     return found
 
 
-def _format_context(jobs_with_scores: List[Tuple[Dict, float]], resume_skills: Optional[List[str]] = None) -> str:
+def _format_context(
+    jobs_with_scores: List[Tuple[Dict, float]],
+    resume_skills: Optional[List[str]] = None,
+) -> str:
     resume_skill_set = set(s.lower() for s in resume_skills) if resume_skills else None
     lines = []
 
@@ -76,11 +85,29 @@ def _format_context(jobs_with_scores: List[Tuple[Dict, float]], resume_skills: O
     return "\n".join(lines)
 
 
-def query_jobs(user_query: str, resume_skills: Optional[List[str]] = None, top_k: int = 5, use_rerank: bool = True) -> Dict:
+def query_jobs(
+    user_query: str,
+    resume_skills: Optional[List[str]] = None,
+    top_k: int = 5,
+    use_rerank: bool = False,  # disabled by default — cross-encoder OOMs on free-tier RAM
+) -> Dict:
+    """
+    Full RAG pipeline: hybrid search → rerank → LLM answer.
+    
+    Returns:
+    {
+        "answer": str,
+        "jobs": [...],          # job payloads used as context
+        "retrieval_ms": int,
+        "llm_ms": int,
+    }
+    """
     t0 = time.time()
 
+    # 1. Hybrid retrieval (over-fetch for reranker)
     candidates = hybrid_search(user_query, top_k=top_k * 3 if use_rerank else top_k)
 
+    # 2. Rerank
     if use_rerank and candidates:
         jobs_with_scores = rerank(user_query, candidates, top_k=top_k)
     else:
@@ -89,8 +116,14 @@ def query_jobs(user_query: str, resume_skills: Optional[List[str]] = None, top_k
     retrieval_ms = int((time.time() - t0) * 1000)
 
     if not jobs_with_scores:
-        return {"answer": "No relevant jobs found. Try refreshing the job index or rephrasing your query.", "jobs": [], "retrieval_ms": retrieval_ms, "llm_ms": 0}
+        return {
+            "answer": "No relevant jobs found. Try refreshing the job index or rephrasing your query.",
+            "jobs": [],
+            "retrieval_ms": retrieval_ms,
+            "llm_ms": 0,
+        }
 
+    # 3. Build prompt
     context = _format_context(jobs_with_scores, resume_skills)
     resume_note = ""
     if resume_skills:
@@ -98,6 +131,7 @@ def query_jobs(user_query: str, resume_skills: Optional[List[str]] = None, top_k
 
     user_message = f"{resume_note}\n## Retrieved Jobs\n{context}\n## Question\n{user_query}"
 
+    # 4. Call Groq
     t1 = time.time()
     client = get_client()
     response = client.chat.completions.create(
@@ -111,4 +145,9 @@ def query_jobs(user_query: str, resume_skills: Optional[List[str]] = None, top_k
     answer = response.choices[0].message.content
     llm_ms = int((time.time() - t1) * 1000)
 
-    return {"answer": answer, "jobs": [job for job, _ in jobs_with_scores], "retrieval_ms": retrieval_ms, "llm_ms": llm_ms}
+    return {
+        "answer": answer,
+        "jobs": [job for job, _ in jobs_with_scores],
+        "retrieval_ms": retrieval_ms,
+        "llm_ms": llm_ms,
+    }
