@@ -10,7 +10,7 @@ from typing import Dict, List, Optional, Tuple
 from groq import Groq
 
 from app.config import GROQ_API_KEY, LLM_MODEL
-from app.vectorstore.qdrant_client import hybrid_search
+from app.vectorstore.qdrant_client import semantic_search
 from app.services.reranker import rerank
 from app.services.embedder import SKILL_TO_CATEGORY
 
@@ -105,7 +105,7 @@ def query_jobs(
     t0 = time.time()
 
     # 1. Hybrid retrieval (over-fetch for reranker)
-    candidates = hybrid_search(user_query, top_k=top_k * 3 if use_rerank else top_k)
+    candidates = semantic_search(user_query, top_k=top_k * 3 if use_rerank else top_k)
 
     # 2. Rerank
     if use_rerank and candidates:
