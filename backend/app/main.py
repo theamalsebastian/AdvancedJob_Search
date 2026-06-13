@@ -38,7 +38,7 @@ def preload_models():
     logger = logging.getLogger("startup")
     try:
         from app.vectorstore.qdrant_client import get_embedder
-        logger.info("Preloading sentence-transformers model...")
+        logger.info("Preloading fastembed model...")
         get_embedder()
         logger.info("Embedding model loaded.")
     except Exception as e:
