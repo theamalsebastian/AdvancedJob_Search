@@ -7,6 +7,8 @@ export const api = axios.create({
   headers: { "Content-Type": "application/json" },
 });
 
+// ── Types ─────────────────────────────────────────────────────────────────
+
 export interface Job {
   title: string;
   company: string;
@@ -54,13 +56,15 @@ export interface Analytics {
   searches_over_time: { date: string; count: number }[];
 }
 
+// ── API calls ─────────────────────────────────────────────────────────────
+
 export async function chatQuery(query: string, resumeId?: number, topK = 5): Promise<ChatResponse> {
   const res = await api.post<ChatResponse>("/api/chat", { query, resume_id: resumeId, top_k: topK });
   return res.data;
 }
 
 export async function searchJobs(query: string, topK = 10): Promise<{ results: { job: Job; score: number }[]; retrieval_ms: number }> {
-  const res = await api.post("/api/jobs/search", { query, top_k: topK, use_hybrid: true, use_rerank: true });
+  const res = await api.post("/api/jobs/search", { query, top_k: topK, use_hybrid: false, use_rerank: false });
   return res.data;
 }
 
