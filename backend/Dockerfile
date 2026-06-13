@@ -14,7 +14,7 @@ COPY . .
 
 # Pre-download embedding model into image — avoids slow/failing
 # runtime download on Render's free tier (limited bandwidth + 512MB RAM)
-RUN python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('all-MiniLM-L6-v2')"
+RUN python -c "from fastembed import TextEmbedding; TextEmbedding(model_name='BAAI/bge-small-en-v1.5')"
 
 EXPOSE 8000
 
