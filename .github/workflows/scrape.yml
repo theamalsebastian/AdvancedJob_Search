@@ -1,0 +1,49 @@
+name: Refresh Job Index
+
+on:
+  workflow_dispatch:   # manual trigger
+  schedule:
+    - cron: "0 0 * * *"   # daily at midnight UTC
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Ensure index folder exists
+        run: mkdir -p data/jobs_index
+
+      - name: Run scraper
+        env:
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          INDEX_PATH: data/jobs_index
+        run: python scraper/main.py
+
+      - name: Configure Git
+        run: |
+          git config user.name "Amal Sebastian"
+          git config user.email "theamalsebastian@example.com"
+
+      - name: Set remote with PAT
+        run: git remote set-url origin https://x-access-token:${{ secrets.GH_PAT }}@github.com/theamalsebastian/job_search_assistant.git
+
+      - name: Commit and push changes
+        run: |
+          if [ -n "$(git status --porcelain data/jobs_index)" ]; then
+            git add data/jobs_index
+            git commit -m "update job index"
+            git push origin main
+          else
+            echo "No changes to commit"
+          fi
