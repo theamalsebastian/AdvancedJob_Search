@@ -1,0 +1,16 @@
+name: Refresh Job Index
+
+on:
+  schedule:
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger scrape on live backend
+        run: |
+          curl -X POST https://your-backend.onrender.com/api/jobs/scrape \
+            -H "Content-Type: application/json" \
+            -d '{"queries": ["python", "developer", "engineer", "data", "machine learning"], "location": "", "max_per_query": 20}'
