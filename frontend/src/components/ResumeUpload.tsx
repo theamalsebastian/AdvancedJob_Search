@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { Upload, FileText, CheckCircle2, Loader2 } from "lucide-react";
+import { Upload, CheckCircle2, Loader2 } from "lucide-react";
 import { uploadResume, Resume } from "@/lib/api";
 
 export default function ResumeUpload({ onUploaded }: { onUploaded: (r: Resume) => void }) {
@@ -12,7 +12,7 @@ export default function ResumeUpload({ onUploaded }: { onUploaded: (r: Resume) =
 
   async function handleFile(file: File) {
     if (!file.name.endsWith(".pdf")) {
-      setError("Only PDF files supported");
+      setError("Only PDF files are supported");
       return;
     }
     setError("");
@@ -23,14 +23,14 @@ export default function ResumeUpload({ onUploaded }: { onUploaded: (r: Resume) =
       localStorage.setItem("resume_id", String(result.id));
       onUploaded(result);
     } catch (err) {
-      setError("Upload failed — check backend is running");
+      setError("Upload failed — check that the backend is running");
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <div className="border border-border bg-surface rounded p-6">
+    <div className="border border-border bg-surface rounded-2xl p-6">
       <div
         onClick={() => inputRef.current?.click()}
         onDrop={(e) => {
@@ -39,7 +39,7 @@ export default function ResumeUpload({ onUploaded }: { onUploaded: (r: Resume) =
           if (file) handleFile(file);
         }}
         onDragOver={(e) => e.preventDefault()}
-        className="border-2 border-dashed border-border rounded-lg p-8 text-center cursor-pointer hover:border-accent/40 transition-colors"
+        className="border-2 border-dashed border-border rounded-xl p-10 text-center cursor-pointer hover:border-accent/50 hover:bg-surfaceAlt/50 transition-colors"
       >
         <input
           ref={inputRef}
@@ -49,44 +49,47 @@ export default function ResumeUpload({ onUploaded }: { onUploaded: (r: Resume) =
           onChange={(e) => e.target.files?.[0] && handleFile(e.target.files[0])}
         />
         {loading ? (
-          <Loader2 className="animate-spin mx-auto text-accent" size={32} />
+          <Loader2 className="animate-spin mx-auto text-accent" size={28} />
         ) : resume ? (
-          <CheckCircle2 className="mx-auto text-accent" size={32} />
+          <CheckCircle2 className="mx-auto text-success" size={28} />
         ) : (
-          <Upload className="mx-auto text-textDim" size={32} />
+          <Upload className="mx-auto text-inkSoft" size={28} />
         )}
 
-        <p className="mt-3 text-sm text-text">
-          {loading ? "Parsing resume..." : resume ? resume.filename : "Drop your resume PDF here, or click to browse"}
+        <p className="mt-3 text-sm text-ink font-medium">
+          {loading ? "Reading your resume..." : resume ? resume.filename : "Drop your resume here, or click to browse"}
         </p>
+        {!resume && !loading && (
+          <p className="text-xs text-inkSoft mt-1">PDF only</p>
+        )}
         {error && <p className="text-warn text-sm mt-2">{error}</p>}
       </div>
 
       {resume && (
-        <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-3 font-mono text-sm">
-          <div className="bg-bg rounded p-3 border border-border">
-            <p className="text-textDim text-xs">Skills detected</p>
-            <p className="text-accent text-lg">{resume.skill_count}</p>
+        <div className="mt-5 grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div className="bg-surfaceAlt rounded-xl p-3">
+            <p className="text-inkSoft text-xs">Skills found</p>
+            <p className="font-display text-2xl text-accent">{resume.skill_count}</p>
           </div>
-          <div className="bg-bg rounded p-3 border border-border">
-            <p className="text-textDim text-xs">Experience</p>
-            <p className="text-accent text-lg">~{resume.experience_years ?? "?"} yrs</p>
+          <div className="bg-surfaceAlt rounded-xl p-3">
+            <p className="text-inkSoft text-xs">Experience</p>
+            <p className="font-display text-2xl text-accent">~{resume.experience_years ?? "?"}<span className="text-sm text-inkSoft"> yrs</span></p>
           </div>
-          <div className="bg-bg rounded p-3 border border-border col-span-2">
-            <p className="text-textDim text-xs">Categories</p>
-            <p className="text-text text-sm truncate">{Object.keys(resume.skills_by_category).join(", ")}</p>
+          <div className="bg-surfaceAlt rounded-xl p-3 col-span-2">
+            <p className="text-inkSoft text-xs">Categories covered</p>
+            <p className="text-ink text-sm mt-1 truncate">{Object.keys(resume.skills_by_category).join(", ")}</p>
           </div>
         </div>
       )}
 
       {resume && (
-        <div className="mt-4 space-y-2">
+        <div className="mt-4 space-y-3">
           {Object.entries(resume.skills_by_category).map(([cat, skills]) => (
-            <div key={cat} className="text-sm">
-              <span className="text-textDim font-mono text-xs uppercase">{cat}</span>
-              <div className="flex flex-wrap gap-1 mt-1">
+            <div key={cat}>
+              <span className="text-inkSoft font-data text-[11px] uppercase tracking-wide">{cat.replace(/_/g, " ")}</span>
+              <div className="flex flex-wrap gap-1.5 mt-1.5">
                 {skills.map((s) => (
-                  <span key={s} className="px-2 py-0.5 rounded bg-accent/10 text-accent text-xs border border-accent/20">
+                  <span key={s} className="px-2.5 py-1 rounded-full bg-accentSoft text-accent text-xs font-medium">
                     {s}
                   </span>
                 ))}
