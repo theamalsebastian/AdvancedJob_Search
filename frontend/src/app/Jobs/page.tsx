@@ -43,11 +43,7 @@ export default function JobsPage() {
   async function handleRefresh() {
     setScraping(true);
     try {
-      await scrapeJobs(
-        ["machine learning engineer", "python backend engineer", "data scientist", "AI engineer"],
-        "",
-        15
-      );
+      await scrapeJobs(["python", "developer", "engineer"], "", 10);
       await loadJobs();
     } finally {
       setScraping(false);
@@ -60,57 +56,57 @@ export default function JobsPage() {
   }, [source]);
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 space-y-6">
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 py-10 space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
-          <h1 className="font-mono text-xl text-text">Job Pipeline</h1>
-          <p className="text-textDim text-sm mt-1">Hybrid search + reranking over indexed postings</p>
+          <h1 className="font-display text-3xl font-semibold text-ink">Job board</h1>
+          <p className="text-inkSoft mt-1">Search live postings with semantic matching</p>
         </div>
         <button
           onClick={handleRefresh}
           disabled={scraping}
-          className="flex items-center gap-2 px-3 py-2 rounded border border-border text-sm text-textDim hover:text-text hover:border-accent/40 transition-colors disabled:opacity-50"
+          className="flex items-center gap-2 px-4 py-2 rounded-full border border-border text-sm text-inkSoft hover:text-ink hover:border-accent/50 transition-colors disabled:opacity-50 bg-surface"
         >
           {scraping ? <Loader2 size={14} className="animate-spin" /> : <RefreshCw size={14} />}
-          Refresh Index
+          Refresh listings
         </button>
       </div>
 
       <div className="flex gap-2">
         <div className="relative flex-1">
-          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-textDim" />
+          <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-inkSoft" />
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-            placeholder="Search jobs (semantic + keyword hybrid)..."
-            className="w-full bg-surface border border-border rounded pl-9 pr-4 py-2.5 text-sm focus:border-accent outline-none placeholder:text-textDim"
+            placeholder="Search by role, skill, or company..."
+            className="w-full bg-surface border border-border rounded-full pl-11 pr-4 py-3 text-sm focus:border-accent outline-none placeholder:text-inkSoft"
           />
         </div>
         <select
           value={source}
           onChange={(e) => setSource(e.target.value)}
-          className="bg-surface border border-border rounded px-3 py-2.5 text-sm text-text focus:border-accent outline-none"
+          className="bg-surface border border-border rounded-full px-4 py-3 text-sm text-ink focus:border-accent outline-none"
         >
           <option value="">All sources</option>
-          <option value="indeed">Indeed</option>
-          <option value="linkedin">LinkedIn</option>
+          <option value="arbeitnow">Arbeitnow</option>
+          <option value="remoteok">RemoteOK</option>
         </select>
         <button
           onClick={handleSearch}
-          className="px-4 py-2.5 rounded bg-accent text-bg font-medium text-sm hover:bg-accentDim transition-colors"
+          className="px-6 py-3 rounded-full bg-accent text-white font-medium text-sm hover:bg-accent/90 transition-colors"
         >
           Search
         </button>
       </div>
 
       {loading ? (
-        <div className="flex items-center gap-2 text-textDim text-sm font-mono py-8 justify-center">
-          <Loader2 size={14} className="animate-spin" /> loading jobs...
+        <div className="flex items-center gap-2 text-inkSoft text-sm py-12 justify-center">
+          <Loader2 size={14} className="animate-spin" /> Loading jobs...
         </div>
       ) : jobs.length === 0 ? (
-        <div className="text-center py-12 text-textDim text-sm">
-          No jobs indexed yet. Click <span className="text-accent">Refresh Index</span> to scrape and embed jobs.
+        <div className="text-center py-16 text-inkSoft text-sm bg-surface border border-border rounded-2xl">
+          No jobs indexed yet. Click <span className="text-accent font-medium">Refresh listings</span> to pull in fresh postings.
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
