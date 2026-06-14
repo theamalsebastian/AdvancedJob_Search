@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Send, Loader2, Zap } from "lucide-react";
+import { Send, Loader2, Sparkles } from "lucide-react";
 import { chatQuery, Job, ChatResponse } from "@/lib/api";
 import JobCard from "./JobCard";
 
@@ -18,6 +18,36 @@ const EXAMPLES = [
   "What skills should I learn for MLOps?",
   "Summarize current AI job market trends",
 ];
+
+// Minimal markdown: **bold** and bullet lines starting with *
+function renderRich(text: string) {
+  const lines = text.split("\n");
+  return lines.map((line, i) => {
+    const trimmed = line.trim();
+    const isBullet = trimmed.startsWith("* ") || trimmed.startsWith("- ");
+    const content = isBullet ? trimmed.slice(2) : line;
+    const parts = content.split(/(\*\*[^*]+\*\*)/g).map((part, j) =>
+      part.startsWith("**") && part.endsWith("**") ? (
+        <strong key={j} className="font-semibold text-ink">{part.slice(2, -2)}</strong>
+      ) : (
+        <span key={j}>{part}</span>
+      )
+    );
+    if (isBullet) {
+      return (
+        <li key={i} className="ml-4 list-disc text-ink leading-relaxed">
+          {parts}
+        </li>
+      );
+    }
+    if (!trimmed) return <div key={i} className="h-2" />;
+    return (
+      <p key={i} className="text-ink leading-relaxed">
+        {parts}
+      </p>
+    );
+  });
+}
 
 export default function ChatWindow({ resumeId }: { resumeId?: number }) {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -51,7 +81,7 @@ export default function ChatWindow({ resumeId }: { resumeId?: number }) {
     } catch (err) {
       setMessages((m) => [
         ...m,
-        { role: "assistant", content: "Error: could not reach the backend. Check API_URL and that the server is running." },
+        { role: "assistant", content: "I couldn't reach the job index right now. Make sure the backend is running and try again." },
       ]);
     } finally {
       setLoading(false);
@@ -59,19 +89,24 @@ export default function ChatWindow({ resumeId }: { resumeId?: number }) {
   }
 
   return (
-    <div className="flex flex-col h-[calc(100vh-3.5rem)]">
-      <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-6 max-w-3xl mx-auto w-full">
+    <div className="flex flex-col h-[calc(100vh-4rem)]">
+      <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-8 max-w-3xl mx-auto w-full">
         {messages.length === 0 && (
-          <div className="space-y-4">
-            <div className="font-mono text-sm text-textDim">
-              <span className="text-accent">$</span> ask anything about jobs, skills, or your resume match
+          <div className="space-y-6">
+            <div>
+              <h1 className="font-display text-3xl font-semibold text-ink">
+                What are you looking for?
+              </h1>
+              <p className="text-inkSoft mt-2">
+                Ask in plain language — I'll search live job postings and match them against your resume.
+              </p>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {EXAMPLES.map((ex) => (
                 <button
                   key={ex}
                   onClick={() => handleSend(ex)}
-                  className="text-left text-sm border border-border rounded p-3 hover:border-accent/40 hover:bg-surfaceHover transition-colors text-textDim hover:text-text"
+                  className="text-left text-sm border border-border rounded-xl p-4 bg-surface hover:border-accent/50 hover:shadow-sm transition-all text-inkSoft hover:text-ink"
                 >
                   {ex}
                 </button>
@@ -84,23 +119,24 @@ export default function ChatWindow({ resumeId }: { resumeId?: number }) {
           {messages.map((msg, i) => (
             <div key={i}>
               {msg.role === "user" ? (
-                <div className="flex gap-2 items-start">
-                  <span className="font-mono text-accent text-sm mt-0.5">{">"}</span>
-                  <p className="text-text">{msg.content}</p>
+                <div className="flex justify-end">
+                  <div className="bg-ink text-bg rounded-2xl rounded-br-sm px-4 py-2.5 max-w-[85%]">
+                    <p>{msg.content}</p>
+                  </div>
                 </div>
               ) : (
                 <div className="space-y-3">
-                  <div className="bg-surface border border-border rounded p-4">
-                    <p className="text-text whitespace-pre-wrap leading-relaxed">{msg.content}</p>
+                  <div className="bg-surface border border-border rounded-2xl rounded-bl-sm p-5">
+                    <div className="space-y-1">{renderRich(msg.content)}</div>
                     {msg.timing && (
-                      <p className="font-mono text-xs text-textDim mt-3 pt-3 border-t border-border flex items-center gap-1">
-                        <Zap size={12} className="text-accent" />
-                        retrieval {msg.timing.retrieval_ms}ms · llm {msg.timing.llm_ms}ms
+                      <p className="font-data text-[11px] text-inkSoft mt-4 pt-3 border-t border-border flex items-center gap-1.5">
+                        <Sparkles size={12} className="text-accent" />
+                        retrieved in {msg.timing.retrieval_ms}ms · answered in {msg.timing.llm_ms}ms
                       </p>
                     )}
                   </div>
                   {msg.jobs && msg.jobs.length > 0 && (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       {msg.jobs.map((job, j) => (
                         <JobCard key={j} job={job} />
                       ))}
@@ -111,9 +147,9 @@ export default function ChatWindow({ resumeId }: { resumeId?: number }) {
             </div>
           ))}
           {loading && (
-            <div className="flex items-center gap-2 text-textDim text-sm font-mono">
+            <div className="flex items-center gap-2 text-inkSoft text-sm">
               <Loader2 size={14} className="animate-spin" />
-              searching jobs, reranking, generating answer...
+              Searching jobs and writing your answer...
             </div>
           )}
           <div ref={scrollRef} />
@@ -127,12 +163,12 @@ export default function ChatWindow({ resumeId }: { resumeId?: number }) {
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleSend()}
             placeholder="Ask about jobs, skills, or career strategy..."
-            className="flex-1 bg-bg border border-border rounded px-4 py-2.5 text-sm focus:border-accent outline-none placeholder:text-textDim"
+            className="flex-1 bg-surfaceAlt border border-border rounded-full px-5 py-3 text-sm focus:border-accent outline-none placeholder:text-inkSoft"
           />
           <button
             onClick={() => handleSend()}
             disabled={loading || !input.trim()}
-            className="px-4 py-2.5 rounded bg-accent text-bg font-medium text-sm disabled:opacity-40 hover:bg-accentDim transition-colors flex items-center gap-1.5"
+            className="px-5 py-3 rounded-full bg-accent text-white font-medium text-sm disabled:opacity-40 hover:bg-accent/90 transition-colors flex items-center gap-1.5"
           >
             <Send size={14} /> Send
           </button>
