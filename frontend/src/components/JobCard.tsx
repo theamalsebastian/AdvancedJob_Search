@@ -3,7 +3,7 @@ import { Job } from "@/lib/api";
 
 export default function JobCard({ job, score }: { job: Job; score?: number }) {
   return (
-    <div className="border border-border bg-surface rounded-2xl p-5 hover:border-accent/50 hover:shadow-sm transition-all">
+    <div className="border border-border bg-surface rounded-2xl shadow-card p-5 hover:border-accent/50 hover:shadow-sm transition-all">
       <div className="flex items-start justify-between gap-3">
         <div>
           <h3 className="font-display font-semibold text-ink leading-snug text-lg">{job.title}</h3>
