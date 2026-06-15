@@ -9,7 +9,7 @@ const COLORS = ["#FF6B4A", "#5B8C5A", "#D97706", "#6B7280", "#FFB39A"];
 
 function StatCard({ label, value }: { label: string; value: string | number }) {
   return (
-    <div className="border border-border bg-surface rounded-2xl p-5">
+    <div className="border border-border bg-surface rounded-2xl shadow-card p-5">
       <p className="text-inkSoft text-xs uppercase tracking-wide">{label}</p>
       <p className="font-display text-3xl font-semibold text-accent mt-1">{value}</p>
     </div>
@@ -36,7 +36,7 @@ export default function AnalyticsDashboard() {
   }
 
   if (!data) {
-    return <div className="text-center py-16 text-inkSoft text-sm bg-surface border border-border rounded-2xl">Could not load analytics. Is the backend running?</div>;
+    return <div className="text-center py-16 text-inkSoft text-sm bg-surface border border-border rounded-2xl shadow-card shadow-card">Could not load analytics. Is the backend running?</div>;
   }
 
   const sourceData = Object.entries(data.jobs_by_source).map(([name, value]) => ({ name, value }));
@@ -51,7 +51,7 @@ export default function AnalyticsDashboard() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div className="border border-border bg-surface rounded-2xl p-5">
+        <div className="border border-border bg-surface rounded-2xl shadow-card p-5">
           <p className="font-display text-lg font-semibold text-ink mb-4">Top skills in demand</p>
           <ResponsiveContainer width="100%" height={320}>
             <BarChart data={data.top_skills_in_demand} layout="vertical" margin={{ left: 20 }}>
@@ -66,7 +66,7 @@ export default function AnalyticsDashboard() {
           </ResponsiveContainer>
         </div>
 
-        <div className="border border-border bg-surface rounded-2xl p-5">
+        <div className="border border-border bg-surface rounded-2xl shadow-card p-5">
           <p className="font-display text-lg font-semibold text-ink mb-4">Jobs by source</p>
           <ResponsiveContainer width="100%" height={320}>
             <PieChart>
@@ -90,7 +90,7 @@ export default function AnalyticsDashboard() {
       </div>
 
       {data.searches_over_time.length > 0 && (
-        <div className="border border-border bg-surface rounded-2xl p-5">
+        <div className="border border-border bg-surface rounded-2xl shadow-card p-5">
           <p className="font-display text-lg font-semibold text-ink mb-4">Searches over time (7 days)</p>
           <ResponsiveContainer width="100%" height={200}>
             <LineChart data={data.searches_over_time}>
