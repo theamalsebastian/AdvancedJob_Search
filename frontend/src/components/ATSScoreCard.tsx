@@ -37,7 +37,7 @@ export default function ATSScoreCard({ resumeId }: { resumeId: number }) {
   }
 
   return (
-    <div className="border border-border bg-surface rounded-2xl p-6 space-y-5">
+    <div className="border border-border bg-surface rounded-2xl shadow-card p-6 space-y-5">
       <div>
         <label className="text-sm font-medium text-ink block mb-2">
           Paste a job description <span className="text-inkSoft font-normal">(optional — improves keyword match scoring)</span>
