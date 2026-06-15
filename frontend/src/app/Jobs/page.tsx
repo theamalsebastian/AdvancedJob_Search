@@ -105,7 +105,7 @@ export default function JobsPage() {
           <Loader2 size={14} className="animate-spin" /> Loading jobs...
         </div>
       ) : jobs.length === 0 ? (
-        <div className="text-center py-16 text-inkSoft text-sm bg-surface border border-border rounded-2xl">
+        <div className="text-center py-16 text-inkSoft text-sm bg-surface border border-border rounded-2xl shadow-card">
           No jobs indexed yet. Click <span className="text-accent font-medium">Refresh listings</span> to pull in fresh postings.
         </div>
       ) : (
