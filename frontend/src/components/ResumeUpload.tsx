@@ -30,7 +30,7 @@ export default function ResumeUpload({ onUploaded }: { onUploaded: (r: Resume) =
   }
 
   return (
-    <div className="border border-border bg-surface rounded-2xl p-6">
+    <div className="border border-border bg-surface rounded-2xl shadow-card p-6">
       <div
         onClick={() => inputRef.current?.click()}
         onDrop={(e) => {
