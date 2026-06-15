@@ -15,7 +15,7 @@ export default function Navbar() {
   const pathname = usePathname();
 
   return (
-    <nav className="border-b border-border bg-surface/80 backdrop-blur-sm sticky top-0 z-50">
+    <nav className="border-b-2 border-border bg-surface/90 backdrop-blur-sm sticky top-0 z-50">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 flex items-center justify-between h-16">
         <Link href="/" className="flex items-center gap-2.5">
           <span className="w-8 h-8 rounded-full bg-accent flex items-center justify-center text-white font-display font-semibold text-sm">
