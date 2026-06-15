@@ -6,10 +6,10 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        bg: "#FAF7F2",
+        bg: "#F3EEE4",
         surface: "#FFFFFF",
-        surfaceAlt: "#F3EEE6",
-        border: "#E8E2D9",
+        surfaceAlt: "#ECE4D6",
+        border: "#D9CFC0",
         ink: "#1F2937",
         inkSoft: "#6B7280",
         accent: "#FF6B4A",
