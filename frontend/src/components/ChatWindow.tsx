@@ -106,7 +106,7 @@ export default function ChatWindow({ resumeId }: { resumeId?: number }) {
                 <button
                   key={ex}
                   onClick={() => handleSend(ex)}
-                  className="text-left text-sm border border-border rounded-xl p-4 bg-surface hover:border-accent/50 hover:shadow-sm transition-all text-inkSoft hover:text-ink"
+                  className="text-left text-sm border border-border rounded-xl p-4 bg-surface shadow-card hover:border-accent/50 hover:shadow-sm transition-all text-inkSoft hover:text-ink"
                 >
                   {ex}
                 </button>
@@ -126,7 +126,7 @@ export default function ChatWindow({ resumeId }: { resumeId?: number }) {
                 </div>
               ) : (
                 <div className="space-y-3">
-                  <div className="bg-surface border border-border rounded-2xl rounded-bl-sm p-5">
+                  <div className="bg-surface border border-border rounded-2xl shadow-card rounded-bl-sm p-5">
                     <div className="space-y-1">{renderRich(msg.content)}</div>
                     {msg.timing && (
                       <p className="font-data text-[11px] text-inkSoft mt-4 pt-3 border-t border-border flex items-center gap-1.5">
