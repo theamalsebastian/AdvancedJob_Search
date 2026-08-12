@@ -156,16 +156,26 @@ export function ResumeSurface() {
                   </ul>
                 </div>
               )}
-              {ats.keyword_match?.missing_keywords?.length > 0 && (
+              {ats?.keyword_match && (
+                <ScoreBar label="Keyword match" score={ats.keyword_match?.score ?? 0} />
+              )}
+
+              {ats?.keyword_match?.missing_keywords?.length > 0 && (
                 <div>
                   <p className="text-sm font-medium text-foreground mb-2">Missing keywords</p>
                   <div className="flex flex-wrap gap-1.5">
-                    {ats.keyword_match.missing_keywords.map((k) => (
-                      <span key={k} className="rounded-full bg-destructive/10 px-3 py-1 text-xs font-medium text-destructive">{k}</span>
+                    {ats.keyword_match?.missing_keywords?.map((k) => (
+                      <span
+                        key={k}
+                        className="rounded-full bg-destructive/10 px-3 py-1 text-xs font-medium text-destructive"
+                      >
+                        {k}
+                      </span>
                     ))}
                   </div>
                 </div>
               )}
+
             </div>
           )}
         </div>
