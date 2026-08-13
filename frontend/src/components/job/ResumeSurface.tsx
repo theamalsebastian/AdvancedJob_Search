@@ -160,7 +160,7 @@ export function ResumeSurface() {
                 <ScoreBar label="Keyword match" score={ats.keyword_match?.score ?? 0} />
               )}
 
-              {ats?.keyword_match?.missing_keywords?.length > 0 && (
+              {(ats.keyword_match?.missing_keywords?.length ?? 0) > 0 && (
                 <div>
                   <p className="text-sm font-medium text-foreground mb-2">Missing keywords</p>
                   <div className="flex flex-wrap gap-1.5">
