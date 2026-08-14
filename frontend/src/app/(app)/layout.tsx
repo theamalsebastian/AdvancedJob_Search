@@ -1,24 +1,15 @@
-import type { Metadata } from "next";
-import "./globals.css";
+import { ContextDock, MobileNav } from "@/components/job/ContextDock";
 
-export const metadata: Metadata = {
-  title: "Job Search AI — Career Pipeline",
-  description: "RAG-powered job search assistant with semantic search and ATS scoring",
-};
-
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <head>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `(function(){try{var t=localStorage.getItem('theme');if(!t){t=window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';}if(t==='dark'){document.documentElement.classList.add('dark');}document.documentElement.style.colorScheme=t;}catch(e){}})();`,
-          }}
-        />
-      </head>
-      <body className="bg-background text-foreground antialiased">
+    <div className="flex h-screen overflow-hidden">
+      <div className="hidden sm:flex">
+        <ContextDock />
+      </div>
+      <main className="flex-1 overflow-y-auto pb-16 sm:pb-0">
         {children}
-      </body>
-    </html>
+      </main>
+      <MobileNav />
+    </div>
   );
 }
