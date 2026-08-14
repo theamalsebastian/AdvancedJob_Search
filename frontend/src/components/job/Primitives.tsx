@@ -9,16 +9,18 @@ export function MatchDial({ value, size = 48 }: MatchDialProps) {
   const color = value >= 70 ? "#22c55e" : value >= 45 ? "#f59e0b" : "#ef4444";
 
   return (
-    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="shrink-0 -rotate-90">
-      <circle cx={size / 2} cy={size / 2} r={r} fill="none" strokeWidth={4}
-        stroke="currentColor" className="text-muted opacity-20" />
-      <circle cx={size / 2} cy={size / 2} r={r} fill="none" strokeWidth={4}
-        stroke={color} strokeDasharray={circ} strokeDashoffset={offset}
-        strokeLinecap="round" style={{ transition: "stroke-dashoffset 0.6s ease" }} />
-      <text x={size / 2} y={size / 2} textAnchor="middle" dominantBaseline="middle"
-        className="rotate-90" style={{ fontSize: size * 0.22, fontWeight: 600, fill: color, transform: `rotate(90deg) translate(0, -${size / 2 + size / 2}px)` }}>
-      </text>
-    </svg>
+    <div className="relative inline-flex items-center justify-center shrink-0">
+      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="-rotate-90">
+        <circle cx={size/2} cy={size/2} r={r} fill="none" strokeWidth={4}
+          stroke="currentColor" className="text-muted-foreground opacity-20" />
+        <circle cx={size/2} cy={size/2} r={r} fill="none" strokeWidth={4}
+          stroke={color} strokeDasharray={circ} strokeDashoffset={offset}
+          strokeLinecap="round" style={{ transition: "stroke-dashoffset 0.6s ease" }} />
+      </svg>
+      <span className="absolute font-mono text-[10px] font-semibold" style={{ color, fontSize: size * 0.22 }}>
+        {value}
+      </span>
+    </div>
   );
 }
 
@@ -34,7 +36,7 @@ export function ScoreRing({ value, size = 80 }: ScoreRingProps) {
     <div className="relative inline-flex items-center justify-center">
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="-rotate-90">
         <circle cx={size/2} cy={size/2} r={r} fill="none" strokeWidth={6}
-          stroke="currentColor" className="text-muted opacity-20" />
+          stroke="currentColor" className="text-muted-foreground opacity-20" />
         <circle cx={size/2} cy={size/2} r={r} fill="none" strokeWidth={6}
           stroke={color} strokeDasharray={circ} strokeDashoffset={offset} strokeLinecap="round"
           style={{ transition: "stroke-dashoffset 0.8s ease" }} />
@@ -42,6 +44,14 @@ export function ScoreRing({ value, size = 80 }: ScoreRingProps) {
       <span className="absolute font-display text-xl font-semibold" style={{ color }}>
         {Math.round(value)}
       </span>
+    </div>
+  );
+}
+
+export function Mark({ className }: { className?: string }) {
+  return (
+    <div className={`grid place-items-center rounded-full bg-primary text-primary-foreground font-display font-semibold text-sm ${className}`}>
+      J
     </div>
   );
 }
