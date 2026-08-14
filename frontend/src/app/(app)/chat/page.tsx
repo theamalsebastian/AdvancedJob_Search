@@ -1,0 +1,11 @@
+"use client";
+import { useEffect, useState } from "react";
+import { ChatSurface } from "@/components/job/ChatSurface";
+export default function ChatPage() {
+  const [resumeId, setResumeId] = useState<number | undefined>(undefined);
+  useEffect(() => {
+    const stored = localStorage.getItem("resume_id");
+    if (stored) setResumeId(Number(stored));
+  }, []);
+  return <ChatSurface resumeId={resumeId} />;
+}
