@@ -2,7 +2,7 @@
 
 A full-stack, RAG-powered career platform that helps job seekers find relevant openings, understand how their skills stack up, and check whether their resume will survive an ATS (Applicant Tracking System) scan — all through a natural-language chat interface.
 
-**🔗 Live demo:** https://advanced-job-search.vercel.app
+**🔗 Live demo:** advancedjobsearch.vercel.app
 *(Note: backend runs on a free-tier host and may take ~30s to wake up on first request)*
 
 ---
