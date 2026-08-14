@@ -1,0 +1,38 @@
+export const jobs = [
+  {
+    id: "1",
+    title: "Senior ML Engineer",
+    company: "OpenAI",
+    location: "Remote",
+    match: 92,
+    salary: "$180k–220k",
+    source: "arbeitnow",
+  },
+  {
+    id: "2",
+    title: "Python Backend Engineer",
+    company: "Stripe",
+    location: "Remote",
+    match: 85,
+    salary: "$160k–190k",
+    source: "arbeitnow",
+  },
+  {
+    id: "3",
+    title: "AI Engineer",
+    company: "Anthropic",
+    location: "San Francisco",
+    match: 78,
+    salary: "$170k–210k",
+    source: "arbeitnow",
+  },
+  {
+    id: "4",
+    title: "Data Scientist",
+    company: "Airbnb",
+    location: "Remote",
+    match: 71,
+    salary: "$140k–170k",
+    source: "arbeitnow",
+  },
+];
