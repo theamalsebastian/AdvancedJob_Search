@@ -127,7 +127,7 @@ export default function Landing() {
             {features.map((f) => (
               <div key={f.title} className="tile tile-hover rounded-2xl border p-6" style={{ borderColor: "var(--border)" }}>
                 <span className="grid h-10 w-10 place-items-center rounded-xl ring-1"
-                  style={{ background: "var(--secondary)", color: "var(--primary)", ringColor: "var(--border)" }}>
+                  style={{ background: "var(--secondary)", color: "var(--primary)" }}>
                   <f.icon className="h-5 w-5" />
                 </span>
                 <h2 className="font-display mt-5 text-base font-semibold" style={{ color: "var(--foreground)" }}>
